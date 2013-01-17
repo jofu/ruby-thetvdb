@@ -4,16 +4,16 @@ module TheTVDB
     require "uri"
     require 'rexml/document'
     
-    base_uri = 'http://www.thetvdb.com/api'
-    
-    :attr_reader :api_key
+    attr_reader :api_key, :language, :base_uri
     
     # Creates a TheTVDB::Client instance, used as the basis for all requests
     # TheTVDB::Client.new('your api key', options) returns a TheTVDB::Client
     def initialize (api_key, options={})
       @api_key = api_key
-      @options = options
-      @options['language'] ||= 'en'
+      @language = options[:language] rescue nil
+      @language ||= 'en'
+      @base_uri = options[:base_uri] rescue nil
+      @base_uri ||= 'http://www.thetvdb.com/api'
       check_api_key!
       TheTVDB::Record.client = self
     end
@@ -31,8 +31,8 @@ module TheTVDB
     end
     
     def mirrors
-      response = get_with_key('mirrors.xml')
-      raise "HTTP Response Code: " + response.code + " not 200" if response.code != 200
+      response = self.get_with_key('mirrors.xml')
+      raise "HTTP Response Code: " + response.code + " not 200" if response.code.to_i != 200
       doc = REXML::Document.new response.body
     end
     
@@ -40,28 +40,29 @@ module TheTVDB
     end
     
     def get_series_by_id (id)
-      response = get_with_key('series/#{id}/#{@language}.xml')
-      raise "HTTP Response Code: " + response.code + " not 200" if response.code != 200
+      response = get_with_key("series/#{id}/#{@language}.xml")
+      raise "HTTP Response Code: " + response.code + " not 200" if response.code.to_i != 200
       doc = REXML::Document.new response.body
       return false unless doc.elements['Data'].elements['Series']
       args = {}
       doc.elements['Data'].elements['Series'].elements.each do |e|
           args[e.name.underscore.intern] = e.text
       end
+      args[:client] = self
       series = Series.new(args)
-      series.get_images
-      series.get_episodes
+      #series.get_images
+      #series.get_episodes
       series
     end
     
     protected
     
     def get_with_key (path)
-      uri = URI.parse(BASE_URI + '/' + @api_key + '/' + path)
-      http = Net::HTTP.new(uri.host, uri.port)
+      uri = URI.parse(self.base_uri + '/' + self.api_key + '/' + path)
       response = false
       begin
-        Tvdbr::Retryable.retry(:on => MultiXml::ParseError) do
+        TheTVDB::Retryable.retry do
+          http = Net::HTTP.new(uri.host, uri.port)
           response = http.request(Net::HTTP::Get.new(uri.request_uri))
         end
       rescue Tvdbr::RetryableError => e
