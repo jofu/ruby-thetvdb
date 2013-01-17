@@ -1,5 +1,7 @@
 module TheTVDB
   
+  VERSION = '0.0.1'
+  
   # A couple of additions to the String class
   class String
     def underscore
