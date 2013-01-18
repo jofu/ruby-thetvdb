@@ -9,7 +9,7 @@ module TheTVDB
       
       def [] (index)
         @series ||= []
-        @series[index] = TheTVDB::Record.client.get_series_by_id index unless @series[index]
+        @series[index] = TheTVDB::Client.current.get_series_by_id(index) unless @series[index]
         return @series[index]
       end
     end
@@ -45,7 +45,6 @@ module TheTVDB
       @url = 'http://thetvdb.com/?tab=series&id=' + @id.to_s
       @seasons = []
       @images = {}
-      @client = TheTVDB::Record.client rescue nil
       @client ||= args[:client] rescue nil
     end
     

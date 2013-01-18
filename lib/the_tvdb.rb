@@ -12,7 +12,6 @@ module TheTVDB
   
 end
 
-# A couple of additions to the String class
 class String
   def underscore
     self.gsub(/::/, '/').
