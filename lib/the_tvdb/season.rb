@@ -33,7 +33,7 @@ module TheTVDB
     
     def add_episode (episode)
       @episodes ||= []
-      @episodes[episode.episode_number] = episode if episode.is_a? Series_Episode
+      @episodes[episode.episode_number] = episode if episode.is_a? Episode
     end
 
     def add_poster (poster)

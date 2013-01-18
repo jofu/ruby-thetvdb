@@ -6,7 +6,9 @@ module TheTVDB
   autoload :Client,    'the_tvdb/client'
   autoload :Record,    'the_tvdb/record'
   autoload :Series,    'the_tvdb/series'
+  autoload :Image,     'the_tvdb/image'
   autoload :Season,    'the_tvdb/season'
+  autoload :Episode,   'the_tvdb/episode'
   
 end
 

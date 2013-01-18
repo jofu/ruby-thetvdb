@@ -27,7 +27,7 @@ module TheTVDB
     # Convenience method to get a TheTVDB::Series instance by the series_id
     # TheTVDB::Client_instance\[1234\] return a TheTVDB::Series instance for the series ID 1234
     def [] (series_id)
-      Series[series_id]
+      return Series[series_id]
     end
     
     def mirrors
@@ -50,12 +50,10 @@ module TheTVDB
       end
       args[:client] = self
       series = Series.new(args)
-      #series.get_images
-      #series.get_episodes
+      series.get_images
+      series.get_episodes
       series
     end
-    
-    protected
     
     def get_with_key (path)
       uri = URI.parse(self.base_uri + '/' + self.api_key + '/' + path)

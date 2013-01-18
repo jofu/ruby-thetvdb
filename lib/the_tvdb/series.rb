@@ -9,8 +9,8 @@ module TheTVDB
       
       def [] (index)
         @series ||= []
-        TheTVDB::Record.client.get_series_by_id index unless @series[index]
-        @series[index]
+        @series[index] = TheTVDB::Record.client.get_series_by_id index unless @series[index]
+        return @series[index]
       end
     end
     
@@ -50,8 +50,8 @@ module TheTVDB
     end
     
     def get_images
-      respose = @client.get_with_key("series/#{@id}/banners.xml")
-      raise "HTTP Response Code: " + response.code + " not 200" if response.code != 200
+      response = @client.get_with_key("series/#{@id}/banners.xml")
+      raise "HTTP Response Code: " + response.code + " not 200" if response.code.to_i != 200
       doc = REXML::Document.new response.body
       return false unless doc.elements['Banners']
       doc.elements['Banners'].elements.each do |e|
@@ -71,8 +71,8 @@ module TheTVDB
     end
     
     def get_episodes
-      respose = @client.get_with_key("series/#{@id}/all/" + @client.language + ".xml")
-      raise "HTTP Response Code: " + response.code + " not 200" if response.code != 200
+      response = @client.get_with_key("series/#{@id}/all/" + @client.language + ".xml")
+      raise "HTTP Response Code: " + response.code + " not 200" if response.code.to_i != 200
       doc = REXML::Document.new response.body
       return false unless doc.elements['Data'].elements['Episode']
       doc.elements['Data'].elements.each do |e|
@@ -94,6 +94,24 @@ module TheTVDB
     def [] (season_num)
       return @seasons[season_num.to_i] if @seasons[season_num.to_i]
       false
+    end
+    
+    def to_hash
+      hash = {}
+      instance_variables.each {|var|
+        next unless instance_variable_get(var)
+        hash[var.to_s.delete("@")] = instance_variable_get(var)
+      }
+      images = {}
+      @images.keys.each do |ik|
+        images[ik] ||= []
+        @images[ik].each do |i|
+          images[ik] << i.to_hash
+        end
+      end
+      hash['images'] = images
+      hash['seasons'] = @seasons.collect {|s| s.to_hash}
+      hash
     end
     
   end
